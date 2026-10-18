@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1a2b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>A 股本地股票系统</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="splash" class="splash boot-mode">
+    <canvas id="splash-canvas"></canvas>
+    <div class="boot-scan"></div>
+    <div class="splash-vignette"></div>
+    <div class="splash-scanlines"></div>
+    <div class="splash-grain"></div>
+    <div class="boot-radar-tag">SIGNAL LOCKED<br>CHANNEL 07 · AES</div>
+    <div class="boot-wrap">
+      <div class="boot-head">
+        <span class="boot-dot"></span>
+        <span class="boot-title">DEEP SEA DATA TERMINAL</span>
+        <span class="boot-sec">SECURE ACCESS</span>
+      </div>
+      <div class="boot-log" id="boot-log"></div>
+      <div class="boot-card" id="boot-card" hidden>
+        <div class="boot-step-no" id="boot-step-no">STEP 01 / 03</div>
+        <div class="boot-step-title" id="boot-step-title"></div>
+        <div class="boot-step-desc" id="boot-step-desc"></div>
+        <div class="boot-progress" id="boot-progress"></div>
+        <div class="boot-verify" id="boot-verify"></div>
+        <button id="boot-btn" class="boot-btn">继续</button>
+      </div>
+      <div class="boot-stamp" id="boot-stamp" hidden>ACCESS GRANTED<small>授权完成 · 正在进入交易终端</small></div>
+      <div class="boot-hint-full">点击任意处自动全屏 · 按 Esc 退出全屏</div>
+      <div class="boot-foot">
+        <span class="boot-hint">按 Esc 或点这里跳过认证</span>
+        <button id="boot-skip" class="boot-skip">跳过</button>
+      </div>
+    </div>
+    <div class="welcome" id="welcome" hidden>
+      <div class="welcome-line wl-1">天下英雄如过江之鲫</div>
+      <div class="welcome-line wl-2">皆以凡人之力，与顶级资本搏杀</div>
+      <div class="welcome-line wl-3">欢迎你，天才交易员</div>
+      <div class="welcome-sub">WELCOME · ACCESS LEVEL 02</div>
+    </div>
+      <div class="welcome-sub">WELCOME · ACCESS LEVEL 02</div>
+    </div>
+  </div>
+
+<header class="top">
+  <div class="brand">
+    <span class="logo">📈</span>
+    <div>
+      <h1>A 股本地股票系统</h1>
+      <p class="sub">真实行情（腾讯为主 / 新浪备用）· 模拟交易 · 回测 · AI 建议</p>
+    </div>
+  </div>
+  <div class="status">
+    <span id="badge-market" class="badge">—</span>
+    <span id="badge-source" class="badge">加载中…</span>
+    <span id="badge-time" class="muted"></span>
+    <label class="check live"><input id="live-toggle" type="checkbox" checked> 实时刷新<span class="dot"></span></label>
+    <button id="btn-guide" class="btn">指导书</button>
+      <button id="btn-refresh" class="btn">刷新</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="watchlist">自选股</button>
+  <button class="tab" data-tab="detail">个股</button>
+  <button class="tab" data-tab="account">账户</button>
+  <button class="tab" data-tab="portfolio">持仓</button>
+  <button class="tab" data-tab="backtest">回测</button>
+  <button class="tab" data-tab="alerts">预警</button>
+    <button class="tab" data-tab="settings">设置</button>
+</nav>
+
+<main>
+  <!-- 自选股 -->
+  <section class="panel active" id="panel-watchlist">
+    <div class="row">
+      <input id="search-input" placeholder="输入名称或代码，如 茅台 / 600519" autocomplete="off">
+      <button id="btn-search" class="btn">搜索</button>
+      <div id="search-result" class="search-result"></div>
+    </div>
+    <div class="row filter-row">
+      <input id="watch-filter" placeholder="过滤：代码或名称" autocomplete="off">
+      <span class="muted small" id="watch-filter-note"></span>
+    </div>
+    <table class="grid" id="watchlist-table">
+      <thead>
+        <tr><th class="sortable" data-sort="code">代码</th>
+            <th class="sortable" data-sort="name">名称</th>
+            <th class="num sortable" data-sort="price">最新</th>
+            <th class="num sortable" data-sort="change">涨跌</th>
+            <th class="num sortable" data-sort="change_pct">涨跌幅</th>
+            <th class="num">最高</th><th class="num">最低</th>
+            <th class="num">成交量(手)</th><th>操作</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="muted" id="watchlist-note"></p>
+  </section>
+
+  <!-- 个股 -->
+  <section class="panel" id="panel-detail">
+    <div class="detail-head">
+      <div>
+        <h2 id="detail-title">—</h2>
+        <p class="muted" id="detail-sub"></p>
+      </div>
+      <div class="quote-big" id="detail-price"></div>
+    </div>
+    <div class="row detail-status-row">
+      <span id="detail-status" class="muted small"></span>
+      <button id="btn-detail-retry" class="btn" hidden>重试</button>
+    </div>
+    <div class="row chart-switch">
+      <button id="btn-day" class="btn active-mode">日 K</button>
+      <button id="btn-week" class="btn">周 K</button>
+      <button id="btn-month" class="btn">月 K</button>
+      <button id="btn-minute" class="btn">分时</button>
+      <span class="muted small" id="chart-mode-note">日 K：最近 120 根</span>
+      <label class="check"><input type="checkbox" id="chk-limits" checked> 涨跌停</label>
+      <label class="check"><input type="checkbox" id="chk-cost" checked> 成本线</label>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chart" height="420"></canvas>
+      <div class="chart-tip" id="chart-tip" hidden></div>
+    </div>
+    <div class="legend" id="chart-legend"></div>
+
+    <div class="cols">
+      <div class="card">
+        <h3>AI 建议 <span id="ai-source" class="badge small">规则引擎</span></h3>
+        <div id="ai-model" class="ai-model" hidden></div>
+        <div id="ai-stance" class="stance"></div>
+        <ul id="ai-bullets" class="bullets"></ul>
+        <div id="ai-risks" class="risks"></div>
+        <p class="muted small" id="ai-disclaimer"></p>
+      </div>
+      <div class="card">
+        <h3>模拟下单</h3>
+        <div class="form-row">
+          <label>方向
+            <select id="order-side"><option value="buy">买入</option><option value="sell">卖出</option></select>
+          </label>
+          <label>股数（100 的整数倍）<input id="order-shares" type="number" step="100" min="100" value="100"></label>
+        </div>
+        <div class="form-row">
+          <label>价格（留空按最新价）<input id="order-price" type="number" step="0.01" placeholder="最新价"></label>
+          <button id="btn-order" class="btn primary">提交</button>
+        </div>
+        <p class="muted small">A 股规则：整手买入 · T+1 · 涨跌停拒单 · 佣金万三最低 5 元 · 卖出印花税万五</p>
+        <div id="order-msg" class="msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 账户 -->
+  <section class="panel" id="panel-account">
+    <div class="cards" id="acct-cards"></div>
+
+    <div class="cols">
+      <div class="card">
+        <h3>资产配置（股票 + 现金）</h3>
+        <div class="alloc-bar" id="alloc-bar"></div>
+        <div class="alloc-legend" id="alloc-legend"></div>
+        <table class="grid" id="alloc-table">
+          <thead><tr><th>标的</th><th class="num">市值</th><th class="num">权重</th><th class="num">盈亏</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>资产曲线</h3>
+        <canvas id="acct-chart" height="220"></canvas>
+        <p class="muted small" id="acct-note">每天首次打开账户时记一个点（同日覆盖）；最多保留 240 天。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>资金操作</h3>
+      <div class="form-row">
+        <label>金额 <input id="flow-amount" type="number" value="10000" step="1000" min="0.01"></label>
+        <label>备注 <input id="flow-note" placeholder="可选" size="18"></label>
+        <button id="btn-deposit" class="btn primary">入金（钱包 → 证券）</button>
+        <button id="btn-withdraw" class="btn">出金（证券 → 钱包）</button>
+        <span class="muted small" id="flow-msg"></span>
+      </div>
+      <p class="muted small" id="flow-hint">钱包是「假银行卡」：15 万起步。入金从钱包扣（扣不成负数），出金回到钱包。
+        只改本地模拟账户，不涉及真实资金；收益率按「净入金」算，加钱不会被当成盈利。</p>
+    </div>
+
+    <h3>资金流水</h3>
+    <table class="grid" id="flows-table">
+      <thead><tr><th>日期</th><th>类型</th><th class="num">金额</th><th>备注</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+  <!-- 持仓 -->
+  <section class="panel" id="panel-portfolio">
+    <div class="cards">
+      <div class="metric"><span>总资产</span><b id="pf-total">—</b></div>
+      <div class="metric"><span>可用现金</span><b id="pf-cash">—</b></div>
+      <div class="metric"><span>持仓市值</span><b id="pf-mv">—</b></div>
+      <div class="metric"><span>浮动盈亏</span><b id="pf-float">—</b></div>
+      <div class="metric"><span>已实现盈亏</span><b id="pf-real">—</b></div>
+    </div>
+    <table class="grid" id="pf-table">
+      <thead><tr><th>代码</th><th>名称</th><th class="num">持仓</th><th class="num">可卖</th>
+        <th class="num">成本</th><th class="num">现价</th><th class="num">市值</th>
+        <th class="num">权重</th><th class="num">盈亏</th><th class="num">盈亏%</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row">
+      <button id="btn-reset" class="btn danger">重置模拟盘（20 万）</button>
+      <span class="muted small">重置只清本地模拟账本，不涉及任何真实资金。</span>
+    </div>
+    <h3>最近成交</h3>
+    <table class="grid" id="trades-table">
+      <thead><tr><th>日期</th><th>代码</th><th>方向</th><th class="num">价格</th>
+        <th class="num">股数</th><th class="num">金额</th><th class="num">费用</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 回测 -->
+  <section class="panel" id="panel-backtest">
+    <div class="form-row">
+      <label>代码 <input id="bt-code" value="000001" size="8"></label>
+      <label>短均线 <input id="bt-short" type="number" value="5" min="1"></label>
+      <label>长均线 <input id="bt-long" type="number" value="20" min="2"></label>
+      <label>初始资金 <input id="bt-cash" type="number" value="200000" min="1000"></label>
+      <label>滑点（基点）<input id="bt-slip" type="number" value="0" min="0" step="1"></label>
+      <label class="check"><input id="bt-respect" type="checkbox" checked> 涨跌停不可成交</label>
+      <label>复权口径
+        <select id="bt-fqt">
+          <option value="qfq">前复权（信号连续）</option>
+          <option value="bfq">不复权（可成交价）</option>
+          <option value="hfq">后复权（含分红）</option>
+        </select>
+      </label>
+      <button id="btn-backtest" class="btn primary">开始回测</button>
+    </div>
+    <div class="cards" id="bt-metrics"></div>
+    <canvas id="bt-chart" height="220"></canvas>
+    <p class="muted small" id="bt-note"></p>
+    <table class="grid" id="bt-trades">
+      <thead><tr><th>买入日</th><th class="num">买入价</th><th>卖出日</th><th class="num">卖出价</th>
+        <th class="num">股数</th><th class="num">毛利</th><th class="num">费用</th>
+        <th class="num">净利</th><th class="num">收益率</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- 预警 -->
+  <section class="panel" id="panel-alerts">
+    <div class="form-row">
+      <label>代码 <input id="al-code" value="600519" size="8"></label>
+      <label>条件
+        <select id="al-op"><option value="above">价格上穿</option><option value="below">价格下穿</option></select>
+      </label>
+      <label>阈值 <input id="al-price" type="number" step="0.01" value="1400"></label>
+      <button id="btn-alert-add" class="btn primary">添加预警</button>
+    </div>
+    <table class="grid" id="alerts-table">
+      <thead><tr><th>代码</th><th>条件</th><th class="num">阈值</th><th class="num">当前价</th>
+        <th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="muted small">预警是本地检查：页面打开/刷新时比较最新价，不后台常驻、不推送。</p>
+  </section>
+
+  <!-- 设置 -->
+  <section class="panel" id="panel-settings">
+    <div class="card">
+      <h3>AI 建议：真模型（可选）</h3>
+      <p class="muted small">
+        默认使用<strong>本地规则引擎</strong>（离线、可复现）。填了 API key 并勾选启用后，
+        才会调用你配置的 OpenAI 兼容接口；失败会自动回落到规则引擎并显示原因。
+        本程序<strong>不内置任何模型</strong>，也不代表 DeepSeek 官方。
+      </p>
+      <div class="form-row">
+        <label class="check"><input id="llm-enabled" type="checkbox"> 启用真模型</label>
+        <label>模型 <input id="llm-model" value="deepseek-chat" size="18"></label>
+      </div>
+      <div class="form-row">
+        <label class="wide">接口地址 <input id="llm-url" value="https://api.deepseek.com/chat/completions" size="48"></label>
+      </div>
+      <div class="form-row">
+        <label class="wide">API Key <input id="llm-key" type="password" placeholder="留空则不修改" size="48"></label>
+      </div>
+      <div class="row">
+        <button id="btn-llm-save" class="btn primary">保存</button>
+        <button id="btn-llm-clear" class="btn">清除 key</button>
+        <span class="muted small" id="llm-status"></span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>数据源诊断</h3>
+      <p class="muted small">点一下会真的请求一次上游（行情 / K 线 / 分时 / 搜索），把耗时与失败原因列出来——「拿不到数据」时先看这里。</p>
+      <div class="row">
+        <button id="btn-diag" class="btn">运行诊断</button>
+        <span class="muted small" id="diag-status"></span>
+      </div>
+      <pre id="diag-out" class="diag-out" hidden></pre>
+    </div>
+    <div class="card">
+      <h3>数据与红线条</h3>
+      <ul class="bullets">
+        <li>行情来自腾讯 / 新浪公开接口，按需请求，<strong>不做后台定时抓取</strong>。</li>
+        <li>接口不可达时使用本地缓存或录制样本，页面顶部会标注「缓存 / 演示」。</li>
+        <li><strong>不接券商、不下真单、不碰真钱</strong>；所有交易都是本地模拟账本。</li>
+        <li>分析仅供参考，不构成投资建议。</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="muted small">
+  本地运行 · 零第三方依赖 · 数据可能滞后（见顶部时间戳）· 不构成投资建议
+</footer>
+<script src="app.js"></script>
+  <div id="toast" class="toast" hidden></div>
+  <div id="modal" class="modal" hidden>
+    <div class="modal-box">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body" class="modal-body"></div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn">取消</button>
+        <button id="modal-ok" class="btn danger">确定</button>
+      </div>
+    </div>
+  </div>
+  <div id="guide" class="guide" hidden>
+    <div class="guide-book">
+      <div class="guide-page" id="guide-page"></div>
+      <div class="guide-nav">
+        <button id="guide-prev" class="btn">‹ 上一页</button>
+        <span id="guide-ind" class="muted small">1 / 8</span>
+        <button id="guide-next" class="btn primary">下一页 ›</button>
+        <button id="guide-close" class="btn">关闭</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

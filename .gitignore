@@ -1,0 +1,32 @@
+# ---- 运行数据（含你的持仓、账号、API key 密文，绝不入库）----
+data/
+*.state.json
+data/**/state.json
+
+# ---- 本机备份 / 回退点 ----
+_backup/
+
+# ---- 第三方二进制 ----
+tools/bin/
+*.exe
+
+# ---- 日志 ----
+*.log
+docs/*.log
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 打包产物 ----
+*.zip
+股票系统-分享版.zip
