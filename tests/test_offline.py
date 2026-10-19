@@ -53,3 +53,15 @@ class TestOfflineFixtures(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestKlineLimit(unittest.TestCase):
+    def test_kline_returns_exact_limit(self):
+        # 腾讯接口会多给一根（含今天这根未收盘的），接口必须按请求根数截断
+        for limit in (5, 50, 120):
+            res = datasource.get_kline("600519", limit=limit, allow_network=False)
+            self.assertEqual(len(res["bars"]), limit, "limit=%d 应返回 %d 根" % (limit, limit))
+
+
+if __name__ == "__main__":
+    unittest.main()

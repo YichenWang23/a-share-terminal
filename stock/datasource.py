@@ -451,6 +451,7 @@ def get_quotes(codes, cache=None, allow_network=True):
 def get_kline(code, limit=320, cache=None, allow_network=True, fqt="qfq"):
     code = normalize_code(code)
     cache = cache or Cache()
+    lim = max(1, int(limit))
     fqt = fqt if fqt in ("qfq", "hfq", "bfq") else "qfq"
     # 腾讯接口：不复权传空串（返回 day 键），后复权 hfq、前复权 qfq
     fqt_param = "" if fqt == "bfq" else fqt
@@ -460,14 +461,14 @@ def get_kline(code, limit=320, cache=None, allow_network=True, fqt="qfq"):
     if _online(allow_network):
         item, age = cache.get_fresh(key, KLINE_TTL)
         if item is not None:
-            return {"bars": item["payload"],
+            return {"bars": item["payload"][-lim:],
                     "meta": {"source": item.get("source", "cache"), "stale": False,
                              "demo": False, "cached": True, "age": round(age, 1),
                              "errors": errors}}
         if not source_down("tencent_kline"):
             try:
                 url = TENCENT_KLINE % (tencent_symbol(code), int(limit), fqt_param)
-                bars = parse_tencent_kline(http_get(url, {"Referer": "https://finance.qq.com/"}))
+                bars = parse_tencent_kline(http_get(url, {"Referer": "https://finance.qq.com/"}))[-lim:]
                 if bars:
                     cache.put(key, bars, source="tencent")
                     return {"bars": bars, "meta": {"source": "tencent", "stale": False,
@@ -481,7 +482,7 @@ def get_kline(code, limit=320, cache=None, allow_network=True, fqt="qfq"):
         if not source_down("sina_kline"):
             try:
                 url = SINA_KLINE % (tencent_symbol(code), int(limit))
-                bars = parse_sina_kline(http_get(url, {"Referer": "https://finance.sina.com.cn/"}))
+                bars = parse_sina_kline(http_get(url, {"Referer": "https://finance.sina.com.cn/"}))[-lim:]
                 if bars:
                     cache.put(key, bars, source="sina")
                     return {"bars": bars, "meta": {"source": "sina", "stale": False,
@@ -493,7 +494,7 @@ def get_kline(code, limit=320, cache=None, allow_network=True, fqt="qfq"):
 
     cached = cache.get(key)
     if cached and cached.get("payload"):
-        return {"bars": cached["payload"],
+        return {"bars": cached["payload"][-lim:],
                 "meta": {"source": "cache", "stale": True, "demo": False,
                          "fetched_at": cached.get("fetched_at"), "errors": errors}}
 
@@ -501,13 +502,13 @@ def get_kline(code, limit=320, cache=None, allow_network=True, fqt="qfq"):
     if not raw:
         sina_raw = _fixture("sina_kline_%s_day.json" % tencent_symbol(code))
         if sina_raw:
-            bars = parse_sina_kline(sina_raw)
+            bars = parse_sina_kline(sina_raw)[-lim:]
             if bars:
                 return {"bars": bars,
                         "meta": {"source": "fixture", "stale": True, "demo": True,
                                  "adjust": fqt, "errors": errors}}
     if raw:
-        return {"bars": parse_tencent_kline(raw),
+        return {"bars": parse_tencent_kline(raw)[-lim:],
                 "meta": {"source": "fixture", "stale": True, "demo": True, "errors": errors}}
     return {"bars": [], "meta": {"source": "none", "stale": True, "demo": False,
                                  "errors": errors}}
