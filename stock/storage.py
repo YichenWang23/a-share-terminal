@@ -130,14 +130,14 @@ DEFAULT_WATCHLIST = [
     "510300",  # 沪深300ETF
 ]
 
-DEFAULT_CASH = 200_000.0
+DEFAULT_CASH = 350_000.0
 
 DEFAULT_STATE = {
     "watchlist": DEFAULT_WATCHLIST,
     "portfolio": {"cash": DEFAULT_CASH, "day": None, "positions": {},
                   "realized_pnl": 0.0, "trades": []},
     "alerts": [],
-    "account": {"flows": [], "snapshots": [], "next_id": 1, "wallet": 150_000.0},
+    "account": {"flows": [], "snapshots": [], "next_id": 1, "wallet": 0.0},
     "settings": {
         "llm": {
             "enabled": False,

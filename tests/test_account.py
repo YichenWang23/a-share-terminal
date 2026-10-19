@@ -43,26 +43,27 @@ class TestFlows(unittest.TestCase):
 
 
 class TestWallet(unittest.TestCase):
-    def test_default_wallet_is_150k(self):
-        acct = account.default_account(200000.0)
-        self.assertEqual(account.wallet_balance(acct), 150000.0)
+    def test_default_wallet_is_zero(self):
+        # 本金全部在证券账户，钱包从 0 开始
+        acct = account.default_account(350000.0)
+        self.assertEqual(account.wallet_balance(acct), 0.0)
 
     def test_old_account_gets_wallet_filled(self):
         acct = {"flows": [], "snapshots": [], "next_id": 1}
-        self.assertEqual(account.wallet_balance(acct), 150000.0)
+        self.assertEqual(account.wallet_balance(acct), 0.0)
         self.assertIn("wallet", acct)
 
     def test_net_worth_includes_wallet(self):
-        acct = account.default_account(200000.0)
-        s = account.summary(acct, snap(200000.0, []))
-        self.assertEqual(s["wallet"], 150000.0)
+        acct = account.default_account(350000.0)
+        s = account.summary(acct, snap(350000.0, []))
+        self.assertEqual(s["wallet"], 0.0)
         self.assertEqual(s["net_worth"], 350000.0)
 
     def test_position_pct_of_net_worth(self):
-        acct = account.default_account(200000.0)
+        acct = account.default_account(350000.0)
         s = account.summary(acct, snap(100000.0, [pos("600519", 100000.0)]))
-        # 净资产 = 10万现金 + 10万持仓 + 15万钱包 = 35万，持仓占 28.57%
-        self.assertAlmostEqual(s["position_pct_of_net"], 28.57, places=2)
+        # 净资产 = 10万现金 + 10万持仓 + 0 钱包 = 20万，持仓占 50%
+        self.assertAlmostEqual(s["position_pct_of_net"], 50.0, places=2)
 
     def test_non_finite_amounts_are_rejected(self):
         acct = account.default_account(0)

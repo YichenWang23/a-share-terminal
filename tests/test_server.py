@@ -53,8 +53,13 @@ class TestServer(unittest.TestCase):
 
     def setUp(self):
         # 每个用例都从干净状态开始，避免测试之间互相污染
+        # 钱包默认是 0；钱包相关的用例需要一个非零基数，这里统一给 15 万
         import copy
-        storage.save(copy.deepcopy(storage.DEFAULT_STATE))
+        st = copy.deepcopy(storage.DEFAULT_STATE)
+        # 用 default_account 建（自带开户流水），否则 _migrate_account 会重建账户、把钱包冲回 0
+        from stock import account as account_mod
+        st["account"] = account_mod.default_account(350_000.0, wallet=150_000.0)
+        storage.save(st)
 
     def request(self, method, path, body=None, raw=None):
         conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=30)
@@ -190,8 +195,8 @@ class TestServer(unittest.TestCase):
         self.assertEqual(status, 200, payload)
 
         acc = self.as_json(self.request("GET", "/api/account")[1])
-        self.assertEqual(acc["summary"]["wallet"], 150000.0, "钱包必须回到 15 万")
-        self.assertEqual(acc["summary"]["cash"], 200000.0, "证券现金必须回到 20 万")
+        self.assertEqual(acc["summary"]["wallet"], 0.0, "钱包必须回到 0")
+        self.assertEqual(acc["summary"]["cash"], 350000.0, "证券现金必须回到 35 万")
         self.assertEqual(acc["allocation"]["items"], [], "持仓必须清空")
         self.assertEqual(len(acc["flows"]), 1, "流水只留开户那一条")
 

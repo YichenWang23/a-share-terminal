@@ -17,7 +17,7 @@ KINDS = (KIND_DEPOSIT, KIND_WITHDRAW)
 MAX_SNAPSHOTS = 240
 
 # 钱包 = 假的银行卡：入金从这里扣、出金回到这里，永远不能为负。
-DEFAULT_WALLET = 150_000.0
+DEFAULT_WALLET = 0.0
 
 
 def default_account(cash=0.0, day=None, wallet=DEFAULT_WALLET):

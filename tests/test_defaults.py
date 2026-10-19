@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""默认配置测试：初始资金 20 万、自选股覆盖多个板块。"""
+"""默认配置测试：初始资金 35 万、自选股覆盖多个板块。"""
 import os
 import sys
 import unittest
@@ -9,14 +9,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from stock import storage  # noqa: E402
 from stock.portfolio import Portfolio  # noqa: E402
 
-EXPECTED_CASH = 200_000.0
+EXPECTED_CASH = 350_000.0
 
 
 class TestDefaults(unittest.TestCase):
-    def test_portfolio_default_cash_is_200k(self):
+    def test_portfolio_default_cash_is_350k(self):
         self.assertEqual(Portfolio().cash, EXPECTED_CASH)
 
-    def test_default_state_cash_is_200k(self):
+    def test_default_state_cash_is_350k(self):
         self.assertEqual(storage.DEFAULT_STATE["portfolio"]["cash"], EXPECTED_CASH)
 
     def test_watchlist_is_broad_enough(self):

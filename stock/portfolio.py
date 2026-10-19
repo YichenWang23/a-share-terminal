@@ -38,7 +38,7 @@ def _parse_price_shares(price, shares):
 
 
 class Portfolio:
-    def __init__(self, cash=200_000.0, day=None):
+    def __init__(self, cash=350_000.0, day=None):
         self.cash = float(cash)
         self.day = day or today_str()
         self.positions = {}      # code -> {code,name,shares,available,avg_cost,fees_paid}
@@ -181,7 +181,7 @@ class Portfolio:
 
     @classmethod
     def from_dict(cls, data):
-        p = cls(cash=data.get("cash", 200_000.0), day=data.get("day"))
+        p = cls(cash=data.get("cash", 350_000.0), day=data.get("day"))
         p.positions = data.get("positions", {}) or {}
         p.realized_pnl = float(data.get("realized_pnl", 0.0))
         p.trades = data.get("trades", []) or []

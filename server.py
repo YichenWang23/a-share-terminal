@@ -508,7 +508,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/portfolio/reset":
             try:
-                cash = float(body.get("cash") or 200_000.0)
+                cash = float(body.get("cash") or 350_000.0)
             except (TypeError, ValueError):
                 return self._err(400, "初始资金必须是数字")
             if not math.isfinite(cash) or cash <= 0:

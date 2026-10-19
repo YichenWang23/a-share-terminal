@@ -785,7 +785,7 @@ async function loadPortfolio() {
       <td class="num">${fmt(p.total > 0 ? (r.market_value / p.total * 100) : 0)}%</td>
       <td class="num ${dirCls(r.pnl)}">${fmt(r.pnl)}</td>
       <td class="num ${dirCls(r.pnl)}">${fmt(r.pnl_pct)}%</td>
-    </tr>`).join('') || '<tr><td colspan="10" class="muted">还没有持仓（模拟盘初始 20 万）</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="10" class="muted">还没有持仓（本金 35 万）</td></tr>';
 
   $('#trades-table tbody').innerHTML = (res.trades || []).slice().reverse().map((t) => `
     <tr>
@@ -1253,7 +1253,7 @@ const GUIDE_PAGES = [
         <li><b>T+1</b>：今天买入的股票，<b>下一个交易日</b>才能卖出</li>
         <li>卖出得到的钱<b>当天可以继续买</b>，第二天才能取走</li>
         <li>本系统用「钱包（银行卡）↔ 证券账户」模拟这套资金流转</li>
-        <li>钱包初始 <b>15 万</b>，证券账户初始 <b>20 万</b></li>
+        <li>本金 <b>35 万</b>，全部放在证券账户里（钱包初始 0）</li>
       </ul>`,
   },
   {
@@ -1413,8 +1413,8 @@ async function resetPortfolio() {
     danger: true,
     body: [
       '确定后，所有数据将恢复为初始状态：',
-      '• 持仓与成交记录清空，证券现金回到 <b>20 万</b>',
-      '• 钱包（银行卡）回到 <b>15 万</b>',
+      '• 持仓与成交记录清空，证券现金回到 <b>35 万</b>',
+      '• 钱包（银行卡）回到 <b>0</b>',
       '• 资金流水与资产曲线清空',
       '• 价格预警全部删除',
       '• 自选股恢复为默认 88 只',
@@ -1425,7 +1425,7 @@ async function resetPortfolio() {
   if (!ok) return;
   const res = await api('/api/portfolio/reset', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cash: 200000 }),
+    body: JSON.stringify({ cash: 350000 }),
   });
   loadPortfolio();
   refresh();
